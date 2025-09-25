@@ -1,0 +1,52 @@
+// time period and frequency calculation
+
+//`timescale 1ns/1ns // for 100 Mhz
+`timescale 1ps/1ps // for 50 Ghz
+
+module clock_gen;
+  
+bit clk = 0;
+    int t1, t2, T ;
+    real F ;
+  //clk = 1'b0 ;
+
+  // method 1
+ 
+  /*
+  always
+   begin
+    
+    //#5 clk = ~clk ; // for 100 Mhz
+     #10 clk = ~clk ; // for 50 Ghz
+     //$monitor(" time period = %0t ,clock value = %d", $time, clk) ; 
+      
+   end
+  */
+  
+  // method 2
+  initial
+  forever
+     #10 clk = ~clk ;
+   
+ initial
+  begin
+    @(posedge clk)
+   t1 = $time ;
+  @(posedge clk)
+    t2 = $time ;
+  
+  T = t2 - t1 ;
+  $display("time period = %0t", T);
+    F = (1000/T) ; 
+    $display("frequency = %f", F);
+  end
+  
+    initial
+      begin
+        #100 $finish ;
+      // Dump waves
+    $dumpfile("dump.vcd");
+    $dumpvars(1);
+      end
+        
+endmodule
