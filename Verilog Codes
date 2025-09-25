@@ -22,7 +22,7 @@ bit clk = 0;
       
    end
   */
-  
+
   // method 2
   initial
   forever
@@ -50,3 +50,138 @@ bit clk = 0;
       end
         
 endmodule
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// module tb;
+  int 	 fd; 			// Variable for file descriptor handle
+  string line; 			// String value read from the file
+
+  initial begin
+    // 1. Lets first open a new file and write some contents into it
+    fd = $fopen ("file1.txt", "w");
+    for (int i = 0; i < 5; i++) begin
+      $fdisplay (fd, "Iteration = %0d", i);
+    end
+    $fclose(fd);
+
+
+    // 2. Let us now read back the data we wrote in the previous step
+    fd = $fopen ("file1.txt", "r");
+
+    while (!$feof(fd)) begin
+      $fgets(line, fd);
+      $display ("Line: %s", line);
+    end
+
+    // Close this file handle
+    $fclose(fd);
+  end
+endmodule
+/////////////////////////////////////////////////
+
+// function calling task example
+// function can't call task, but we can make it possible
+// using fork join_none
+class A ;
+  
+  function void a();
+    $display("inside function a");  
+  endfunction
+  
+  task c();
+    $display("inside task c");
+  endtask  
+endclass
+
+class B ;
+  A A_h2 ;
+  
+  function void b();
+    $display("inside function b ");
+    //A_h2.a(); // func call func
+    //A_h2.c(); // func calls task - can't call
+    fork
+      d(); // func calls delayed task
+    join_none
+  endfunction
+  
+  task d(); 
+    #10;
+    $display("inside task d");
+    //  A_h2.c(); //task calls task
+  endtask
+  
+  
+endclass
+
+
+module tb;
+  
+A A_h ;
+B B_h ;
+  
+  initial
+    begin
+      
+      A_h = new();
+      B_h = new() ;     
+      //A_h.a() ;
+      //A_h.c();
+      B_h.b();
+      //B_h.d();
+        
+      
+    end 
+  
+endmodule
+
+
+/////////////////////////////////////////////////////////////////////
+
+module bloc_non_block() ;
+  
+int D = 1'b1 ;
+reg Q1, Q2, Q3 ;  
+  
+  reg clk = 0 ;
+ 
+  always
+    begin
+    #5 clk = ~clk ;
+    end
+  
+  always@(posedge clk)
+ // always@(*) 
+  begin
+      //D = 1 ;
+      Q1 <= 1'b0 ;
+      Q1 = D ;
+      Q2 <= Q1; 
+      Q3 <= Q2; 
+      
+    $monitor("At time: %0t,Q1 = %d, Q2 = %d, Q3= %d ",$time, Q1,Q2,Q3) ;
+      //$display(" At time : %0t, Q1 = %d, Q2 = %d, Q3= %d ",$time, Q1,Q2,Q3) ;
+    end
+ 
+  //initial
+    //$monitor(" Q1 = %d, Q2 = %d, Q3= %d ", Q1,Q2,Q3) ;
+  
+ initial 
+  #50 $finish ;
+  
+endmodule
+
+/////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
